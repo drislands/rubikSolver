@@ -1,4 +1,14 @@
 import curses
+import queue
+
+### Curses setup
+
+stdscr = curses.initscr()
+curses.noecho()
+curses.cbreak() 
+stdscr.keypad(True)
+
+###
 
 ###
 # For the sake of consistency, I will always assume that White is the front face and Red is the top face.
@@ -54,6 +64,54 @@ Cube = [ [ [w,w,w],
 ###
 # Functions -- For all rotate functions, set d to true for clockwise, false for counter.
 
+# points to latest version of isValid. To ensure no corruption of the cube
+
+def isValid(cube):
+    return isValid1(cube)
+
+def isValid1(cube):
+    count = {w:0,r:0,g:0,y:0,o:0,b:0}
+    for i in cube:
+        for j in i:
+            for k in j:
+                count[k] = count[k] + 1
+    
+    return (count[w] == 9 and count[r] == 9 and count[g] == 9 and
+            count[y] == 9 and count[o] == 9 and count[b] == 9)
+
+#
+
+def isSolved(cube):
+    for i in cube:
+        color = i[1][1]
+        for j in i:
+            for k in j:
+                if not k == color:
+                    return False
+    return isValid(cube)
+
+##
+
+def isFrontSolved(cube):
+    f = cube[0]
+    color = f[1][1]
+    for i in f:
+        for j in i:
+            if not j == color:
+                return False
+
+    f = cube[1]
+    color = f[1][1]
+    for i in f[2]:
+        if not i == color:
+            return False
+    
+    f = cube[2]
+    color = f[1][1]
+    for i in range(0,3):
+        if not f[i][0] == color:
+            return False
+
 def swap(a,b):
     return (b,a)
 
@@ -98,10 +156,12 @@ def bac(cube):
 #
 
 def rotateFace(face,d): 
-    if d:
+    if d == "cw":
         rotateFaceCW(face)
-    else:
+    elif d == "ccw":
         rotateFaceCCW(face)
+    else:
+        rotateFace180(face)
 
 def rotateFaceCW(f):
     pS(f,0,2)
@@ -120,3 +180,15 @@ def rotateFaceCCW(f):
     pS(f,1,3)
     pS(f,1,7) # rotating the sides
     pS(f,1,5)
+
+def rotateFace180(f):
+    ps(f,0,8)
+    ps(f,2,6)
+
+    ps(f,1,7)
+    ps(f,3,5)
+
+#
+###
+# Solution functions
+
